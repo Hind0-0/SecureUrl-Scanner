@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="hero">
+    <div class="hero-content">
+        <h2>Secure URL Scanning</h2>
+        <p>Check any URL for malicious content using the power of VirusTotal's scanning engines</p>
+    </div>
+</section>
+
+<section class="scan-section">
+    <div class="card">
+        <h3>Scan a URL</h3>
+        <form id="scan-form">
+            <div class="input-group">
+                <i class="fas fa-link"></i>
+                <input type="text" id="url-input" name="url" placeholder="Enter a URL to scan" required>
+                <button type="submit" id="scan-button">
+                    <span>Scan</span>
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </form>
+        
+        <div id="loading" class="hidden">
+            <div class="loading-animation">
+                <div class="pulse-ring"></div>
+                <i class="fas fa-shield-virus"></i>
+            </div>
+            <p>Scanning URL for threats...</p>
+        </div>
+        
+        <div id="results" class="hidden">
+            <div class="results-header">
+                <h4>Scan Results</h4>
+                <span id="scan-time"></span>
+            </div>
+            
+            <div class="url-info">
+                <h5>Scanned URL:</h5>
+                <div class="url-display">
+                    <span id="scanned-url"></span>
+                    <button id="copy-url" aria-label="Copy URL">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="threat-indicator">
+                <div id="threat-level" class="threat-badge safe">
+                    <i class="fas fa-shield-check"></i>
+                    <span>Safe</span>
+                </div>
+            </div>
+            
+            <div class="stats-container">
+                <div class="stat-item" id="harmless-stat">
+                    <div class="stat-icon safe">
+                        <i class="fas fa-check"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h5>Harmless</h5>
+                        <span class="stat-count">0</span>
+                    </div>
+                </div>
+                
+                <div class="stat-item" id="suspicious-stat">
+                    <div class="stat-icon warning">
+                        <i class="fas fa-exclamation"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h5>Suspicious</h5>
+                        <span class="stat-count">0</span>
+                    </div>
+                </div>
+                
+                <div class="stat-item" id="malicious-stat">
+                    <div class="stat-icon danger">
+                        <i class="fas fa-times"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h5>Malicious</h5>
+                        <span class="stat-count">0</span>
+                    </div>
+                </div>
+                
+                <div class="stat-item" id="undetected-stat">
+                    <div class="stat-icon neutral">
+                        <i class="fas fa-question"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h5>Undetected</h5>
+                        <span class="stat-count">0</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="scan-actions">
+                <button id="new-scan-button" class="secondary-button">
+                    <i class="fas fa-redo"></i>
+                    <span>New Scan</span>
+                </button>
+                <button id="share-results-button" class="secondary-button">
+                    <i class="fas fa-share-alt"></i>
+                    <span>Share Results</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="history-section">
+    <div class="card">
+        <div class="card-header">
+            <h3>Recent Scans</h3>
+            {% if scan_history %}
+            <button id="clear-history" class="text-button">
+                <i class="fas fa-trash"></i>
+                <span>Clear All</span>
+            </button>
+            {% endif %}
+        </div>
+        
+        <div id="scan-history">
+            {% if scan_history %}
+                <div class="history-list">
+                    {% for item in scan_history %}
+                    <div class="history-item" data-url="{{ item.url }}" data-stats="{{ item.stats|tojson }}">
+                        <div class="history-threat-indicator {{ item.threat_level|lower|replace(' ', '-') }}">
+                            {% if item.threat_level == "Safe" %}
+                            <i class="fas fa-shield-check"></i>
+                            {% elif item.threat_level == "Low Risk" %}
+                            <i class="fas fa-exclamation"></i>
+                            {% elif item.threat_level == "Moderate Risk" %}
+                            <i class="fas fa-exclamation-triangle"></i>
+                            {% else %}
+                            <i class="fas fa-skull-crossbones"></i>
+                            {% endif %}
+                        </div>
+                        <div class="history-info">
+                            <div class="history-url">{{ item.url }}</div>
+                            <div class="history-meta">
+                                <span class="history-time">{{ item.time }}</span>
+                                <span class="history-status {{ item.threat_level|lower|replace(' ', '-') }}">{{ item.threat_level }}</span>
+                            </div>
+                        </div>
+                        <button class="history-action" aria-label="View details">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-history">
+                    <i class="fas fa-history"></i>
+                    <p>No scan history available</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/scanner.js') }}"></script>
+{% endblock %}
